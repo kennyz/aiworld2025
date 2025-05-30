@@ -169,10 +169,10 @@ function renderSchedule() {
         }
         return `
           <div class="schedule-card" id="${cardId}">
-            <div class="schedule-title">${item.title}</div>
+            <div class="schedule-title" data-talk-idx="${item.id}">${item.title}</div>
             <div class="schedule-meta">${getSessionDate(item)} | ${getSessionTime(item)} | ${getSessionRoom(item)}</div>
             <div class="schedule-speakers">${speakersHtml}</div>
-            <button class="schedule-toggle" aria-expanded="false" data-talk-idx="${item.id}">Show Details</button>
+            
             <div class="schedule-details">
               <div class="schedule-meta"><b>Theme:</b> ${getSessionTheme(item)}</div>
               <div class="schedule-desc"><b>Description:</b> ${item.description ? item.description : ''}</div>
@@ -226,7 +226,7 @@ scheduleList.addEventListener('click', function(e) {
     return;
   }
   // talk弹窗
-  const detailBtn = e.target.closest('.schedule-toggle');
+  const detailBtn = e.target.closest('.schedule-title');
   
   if (detailBtn && detailBtn.dataset.talkIdx) {
     
@@ -244,7 +244,7 @@ function showSpeakerModal(speakerId) {
       <img src="${avatar}" alt="${s.name}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:0.7rem;border:2px solid #eaf1fb;">
       <div style="font-size:1.2rem;font-weight:700;color:#4f8cff;">${s.name}</div>
       <div style="color:#555;margin-bottom:0.5rem;">${company}</div>
-      <div style="font-size:0.98rem;color:#333;text-align:left;margin-top:0.7rem;">${s.bio ? s.bio.replace(/\n/g, '<br>') : ''}</div>
+      <div style="font-size:0.98rem;color:#333;text-align:left;margin-top:0.7rem;max-height: 300px; overflow-y: auto;">${s.bio ? s.bio.replace(/\n/g, '<br>') : ''}</div>
     </div>
   `;
   document.getElementById('modalSpeakerDetail').innerHTML = html;
@@ -274,7 +274,7 @@ function showTalkModal(sessionId) {
       <div style="color:#555;margin-bottom:0.5rem;">${getSessionDate(talk)} | ${getSessionTime(talk)} | ${getSessionRoom(talk)}</div>
       <div style="margin-bottom:0.5rem;">${speakersHtml}</div>
       <div style="margin-bottom:0.5rem;"><b>Theme:</b> ${getSessionTheme(talk)}</div>
-      <div style="margin-bottom:0.5rem;"><b>Description:</b><br>${talk.description ? talk.description.replace(/\n/g, '<br>') : ''}</div>
+      <div style="margin-bottom:0.5rem;max-height: 300px; overflow-y: auto;"><b>Description:</b><br>${talk.description ? talk.description.replace(/\n/g, '<br>') : ''}</div>
     </div>
   `;
   document.getElementById('modalTalkDetail').innerHTML = html;

@@ -94,6 +94,11 @@ main {
   
 }
 
+.schedule-desc {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 .schedule-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -156,6 +161,7 @@ main {
   font-size: 1.1rem;
   font-weight: 700;
   color: #4f8cff;
+  cursor: pointer;
 }
 .schedule-meta {
   font-size: 0.95rem;
@@ -165,6 +171,7 @@ main {
 .schedule-speakers {
   font-size: 0.97rem;
   color: #333;
+  cursor: pointer;
 }
 .schedule-toggle {
   background: none;
