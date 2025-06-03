@@ -13,7 +13,7 @@ let selectedDate = '';
 
 // 读取JSON数据
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('data/aiengineer_sessions_all.json')
+  fetch('data/session_latest_only34.json')
     .then(res => res.json())
     .then(data => {
       // 处理speakers，存储完整对象
@@ -35,7 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
         roomFilter.innerHTML = options.join('');
       }
       // 处理sessions
-      sessions = Array.isArray(data.sessions) ? data.sessions : [];
+      sessions = Array.isArray(data.sessions) ? data.sessions.filter(session => {
+        const date = new Date(session.startsAt);
+        const day = date.getDay();
+        return day === 3 || day === 4; // 3代表周三，4代表周四
+      }) : [];
       renderSchedule();
     });
 });
@@ -126,6 +130,7 @@ function renderSchedule() {
   let filtered = sessions.filter(item => {
     if (selectedRoom && String(item.roomId) !== selectedRoom) return false;
     if (currentTab === 'date' && selectedDate && getSessionDate(item) !== selectedDate) return false;
+    if (currentTab === 'favorites' && !favoritesManager.isFavorite(item.id)) return false;
     const text = (
       item.title + ' ' +
       getSessionSpeakers(item).join(' ') + ' ' +
@@ -141,7 +146,7 @@ function renderSchedule() {
   let html = '';
   const defaultAvatar = 'https://ui-avatars.com/api/?name=AI&background=EAF1FB&color=4f8cff&size=40';
 
-  if (currentTab === 'date') {
+  if (currentTab === 'date' || currentTab === 'favorites') {
     // 先按日期分组
     const dateMap = {};
     filtered.forEach(item => {
@@ -154,7 +159,6 @@ function renderSchedule() {
     // 日期排序
     const sortedDates = Object.keys(dateMap).sort();
     for (const date of sortedDates) {
-      
       // 按时间排序
       dateMap[date].sort((a, b) => (a.startsAt || '').localeCompare(b.startsAt || ''));
       
@@ -170,9 +174,13 @@ function renderSchedule() {
         return `
           <div class="schedule-card" id="${cardId}">
             <div class="schedule-title" data-talk-idx="${item.id}">${item.title}</div>
-            <div class="schedule-meta">${getSessionDate(item)} | ${getSessionTime(item)} | ${getSessionRoom(item)}</div>
+            <div class="schedule-meta-time">${getSessionDate(item)} | ${getSessionTime(item)}</div>
+            <div class="schedule-meta-room"> ${getSessionRoom(item)}</div>
             <div class="schedule-speakers">${speakersHtml}</div>
-            
+            <button class="favorite-btn ${favoritesManager.isFavorite(item.id) ? 'active' : ''}" 
+                    data-talk-id="${item.id}">
+              <i class="fas fa-star"></i>
+            </button>
             <div class="schedule-details">
               <div class="schedule-meta"><b>Theme:</b> ${getSessionTheme(item)}</div>
               <div class="schedule-desc"><b>Description:</b> ${item.description ? item.description : ''}</div>
@@ -219,6 +227,21 @@ function renderSchedule() {
 
 // 事件委托：点击speaker-info弹出模态框
 scheduleList.addEventListener('click', function(e) {
+  // 收藏按钮点击
+  const favoriteBtn = e.target.closest('.favorite-btn');
+  if (favoriteBtn && favoriteBtn.dataset.talkId) {
+    const talkId = favoriteBtn.dataset.talkId;
+    const talk = sessions.find(item => String(item.id) === String(talkId));
+    if (talk) {
+      if (favoritesManager.isFavorite(talkId)) {
+        favoritesManager.removeFavorite(talkId);
+      } else {
+        favoritesManager.addFavorite(talk);
+      }
+    }
+    return;
+  }
+
   // speaker弹窗
   const speakerEl = e.target.closest('.speaker-info');
   if (speakerEl && speakerEl.dataset.speakerId) {
@@ -229,7 +252,6 @@ scheduleList.addEventListener('click', function(e) {
   const detailBtn = e.target.closest('.schedule-title');
   
   if (detailBtn && detailBtn.dataset.talkIdx) {
-    
     showTalkModal(detailBtn.dataset.talkIdx);
     return;
   }
@@ -289,4 +311,90 @@ window.addEventListener('click', function(event) {
   if (event.target === modal) {
     modal.style.display = 'none';
   }
-}); 
+});
+
+// 收藏功能
+class FavoritesManager {
+  constructor() {
+    this.favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    this.favoritesLink = document.getElementById('favoritesLink');
+    this.favoritesSection = document.getElementById('favorites');
+    this.favoritesList = document.getElementById('favorites-list');
+    
+    this.init();
+  }
+
+  init() {
+    // 初始化收藏按钮点击事件
+    this.favoritesLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.toggleFavoritesSection();
+    });
+
+    // 渲染收藏列表
+    this.renderFavorites();
+  }
+
+  toggleFavoritesSection() {
+    const isVisible = this.favoritesSection.style.display !== 'none';
+    this.favoritesSection.style.display = isVisible ? 'none' : 'block';
+    this.favoritesLink.classList.toggle('active', !isVisible);
+    if (!isVisible) {
+      this.renderFavorites();
+    }
+  }
+
+  addFavorite(talk) {
+    if (!this.favorites.some(f => f.id === talk.id)) {
+      this.favorites.push(talk);
+      this.saveFavorites();
+      this.updateFavoriteButton(talk.id, true);
+    }
+  }
+
+  removeFavorite(talkId) {
+    this.favorites = this.favorites.filter(f => f.id !== talkId);
+    this.saveFavorites();
+    this.updateFavoriteButton(talkId, false);
+    this.renderFavorites();
+  }
+
+  isFavorite(talkId) {
+    return this.favorites.some(f => f.id === talkId);
+  }
+
+  saveFavorites() {
+    localStorage.setItem('favorites', JSON.stringify(this.favorites));
+  }
+
+  updateFavoriteButton(talkId, isFavorite) {
+    const btn = document.querySelector(`.favorite-btn[data-talk-id="${talkId}"]`);
+    if (btn) {
+      btn.classList.toggle('active', isFavorite);
+    }
+  }
+
+  renderFavorites() {
+    this.favoritesList.innerHTML = '';
+    this.favorites.forEach(talk => {
+      const talkElement = document.createElement('div');
+      talkElement.className = 'favorite-item';
+      talkElement.innerHTML = `
+        <button class="remove-favorite" data-talk-id="${talk.id}">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>${talk.title}</h3>
+        <p>${talk.speaker}</p>
+        <p>${talk.time} - ${talk.room}</p>
+      `;
+      
+      const removeBtn = talkElement.querySelector('.remove-favorite');
+      removeBtn.addEventListener('click', () => this.removeFavorite(talk.id));
+      
+      this.favoritesList.appendChild(talkElement);
+    });
+  }
+}
+
+// 初始化收藏管理器
+const favoritesManager = new FavoritesManager(); 

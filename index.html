@@ -8,30 +8,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <header class="banner">
     <div class="logo">AI Engineer World Fair</div>
     <nav>
       <ul>
-        <li><a href="#schedule">Schedule</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#print" onclick="window.print();return false;">Print</a></li>
+        <li><a href="#schedule">Schedule</a></li>        
+        <li><a href="#favorites" id="favoritesLink"><i class="fas fa-star"></i> Favorites</a></li>        
       </ul>
     </nav>
   </header>
   <main>
-    <section id="about" class="about">
-      <h1>Welcome to the AI Engineer World Fair 2025</h1>
-      <p>The premier event for AI engineers, researchers, and enthusiasts. Explore the future of AI with world-class speakers, panels, and networking opportunities.</p>
+    <section id="about" class="about">      
+      <p>Explore the future of AI with world-class speakers, panels. by Kun Zhao.</p>
     </section>
     <section id="schedule" class="schedule-section">
       <div class="schedule-controls">
         <button class="tab-btn active" data-tab="date">By Date</button>
         <button class="tab-btn" data-tab="speaker">By Speaker</button>
+        <button class="tab-btn" data-tab="favorites">Favorites</button>
         <div class="date-tabs">
-          <button class="date-tab-btn active" data-date="">All</button>
-          <button class="date-tab-btn" data-date="2025-06-03">2025-06-03</button>
+          <button class="date-tab-btn active" data-date="">All</button>          
           <button class="date-tab-btn" data-date="2025-06-04">2025-06-04</button>
           <button class="date-tab-btn" data-date="2025-06-05">2025-06-05</button>
         </div>
@@ -40,6 +39,12 @@
       </div>
       <div id="schedule-list" class="schedule-list">
         <!-- Schedule will be rendered here -->
+      </div>
+    </section>
+    <section id="favorites" class="favorites-section" style="display: none;">
+      <h2>My Favorites</h2>
+      <div id="favorites-list" class="favorites-list">
+        <!-- Favorites will be rendered here -->
       </div>
     </section>
   </main>
