@@ -10,6 +10,7 @@ let currentTab = 'date';
 let searchTerm = '';
 let selectedRoom = '';
 let selectedDate = '';
+let favoritesManager;
 
 // 读取JSON数据
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,7 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const day = date.getDay();
         return day === 3 || day === 4; // 3代表周三，4代表周四
       }) : [];
+      
+      // 初始化收藏管理器
+      favoritesManager = new FavoritesManager();
+      
+      // 渲染日程
       renderSchedule();
+    })
+    .catch(error => {
+      console.error('Error loading data:', error);
+      scheduleList.innerHTML = '<p style="text-align:center;color:#888;">Error loading schedule data.</p>';
     });
 });
 
@@ -330,6 +340,7 @@ class FavoritesManager {
       e.preventDefault();
       this.toggleFavoritesSection();
     });
+    
 
     // 渲染收藏列表
     this.renderFavorites();
@@ -369,8 +380,16 @@ class FavoritesManager {
 
   updateFavoriteButton(talkId, isFavorite) {
     const btn = document.querySelector(`.favorite-btn[data-talk-id="${talkId}"]`);
-    if (btn) {
-      btn.classList.toggle('active', isFavorite);
+    
+    if (btn) {      
+      console.log(btn);
+      btn.classList.toggle('active', isFavorite);      
+      // 更新css样式
+      if (isFavorite) {
+        btn.style.color = '#ffc107';  // yellow
+      } else {
+        btn.style.color = '#ccc';  // gray
+      }
     }
   }
 
@@ -394,7 +413,4 @@ class FavoritesManager {
       this.favoritesList.appendChild(talkElement);
     });
   }
-}
-
-// 初始化收藏管理器
-const favoritesManager = new FavoritesManager(); 
+} 
